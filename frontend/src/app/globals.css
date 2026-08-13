@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-night-soil: #12231A;
+  --color-frost-glass: rgba(245, 250, 245, 0.08);
+  --color-ripeness-green: #7FB851;
+  --color-papaya-amber: #F2A93B;
+  --color-alert-clay: #D9553B;
+  --color-market-teal: #2FA893;
+  --color-pulp-white: #F3F0E6;
+
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+body {
+  background-color: var(--color-night-soil);
+  color: var(--color-pulp-white);
+  font-family: var(--font-sans);
+}
