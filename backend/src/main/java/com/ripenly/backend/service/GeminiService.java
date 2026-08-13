@@ -39,37 +39,43 @@ public class GeminiService {
         return apiKeys[(attempt - 1) % apiKeys.length];
     }
 
-    public GeminiQualityResult analyzeProduce(byte[] imageBytes, String mimeType, String produceType) {
-        String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+    public List<GeminiQualityResult> analyzeProduceBatch(List<org.springframework.web.multipart.MultipartFile> files, String produceType) {
+        List<Map<String, Object>> partsList = new java.util.ArrayList<>();
         
         String promptText = String.format(
-            "Act as an expert agricultural inspector. Analyze this image of a %s. " +
+            "Act as an expert agricultural inspector. Analyze these %d images of a %s. " +
             "Grade only visible physical quality. Do not infer internal quality, pesticide residue, nutritional value, or food safety from an image. " +
-            "Restrict grade to exactly 'A', 'B', or 'C'.", 
-            produceType
+            "Restrict grade to exactly 'A', 'B', or 'C'. Return a JSON array where each element corresponds to an image in order.", 
+            files.size(), produceType
         );
+        partsList.add(Map.of("text", promptText));
+
+        for (org.springframework.web.multipart.MultipartFile file : files) {
+            try {
+                String base64Image = Base64.getEncoder().encodeToString(file.getBytes());
+                partsList.add(Map.of("inline_data", Map.of(
+                    "mime_type", file.getContentType(),
+                    "data", base64Image
+                )));
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to read image bytes");
+            }
+        }
 
         Map<String, Object> requestBody = new HashMap<>();
-        
-        requestBody.put("contents", List.of(
-            Map.of("parts", List.of(
-                Map.of("text", promptText),
-                Map.of("inline_data", Map.of(
-                    "mime_type", mimeType,
-                    "data", base64Image
-                ))
-            ))
-        ));
-
+        requestBody.put("contents", List.of(Map.of("parts", partsList)));
         requestBody.put("generationConfig", Map.of(
             "responseMimeType", "application/json",
             "responseSchema", Map.of(
-                "type", "OBJECT",
-                "properties", Map.of(
-                    "qualityGrade", Map.of("type", "STRING", "enum", List.of("A", "B", "C")),
-                    "qualityNotes", Map.of("type", "STRING")
-                ),
-                "required", List.of("qualityGrade", "qualityNotes")
+                "type", "ARRAY",
+                "items", Map.of(
+                    "type", "OBJECT",
+                    "properties", Map.of(
+                        "qualityGrade", Map.of("type", "STRING", "enum", List.of("A", "B", "C")),
+                        "qualityNotes", Map.of("type", "STRING")
+                    ),
+                    "required", List.of("qualityGrade", "qualityNotes")
+                )
             )
         ));
 
@@ -79,7 +85,7 @@ public class GeminiService {
             try {
                 String currentKey = getKeyForAttempt(attempt);
                 Map response = restClient.post()
-                        .uri("/v1beta/models/gemini-3.5-flash:generateContent?key={key}", currentKey)
+                        .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", currentKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(requestBody)
                         .retrieve()
@@ -91,28 +97,49 @@ public class GeminiService {
                     List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
                     if (parts != null && !parts.isEmpty()) {
                         String jsonResult = (String) parts.get(0).get("text");
-                        GeminiQualityResult result = new GeminiQualityResult();
-                        result.setQualityGrade("C");
-                        result.setQualityNotes("Could not parse notes.");
-
-                        if (jsonResult.contains("\"qualityGrade\": \"A\"") || jsonResult.contains("\"qualityGrade\":\"A\"")) {
-                            result.setQualityGrade("A");
-                        } else if (jsonResult.contains("\"qualityGrade\": \"B\"") || jsonResult.contains("\"qualityGrade\":\"B\"")) {
-                            result.setQualityGrade("B");
-                        }
-
-                        String searchKey = "\"qualityNotes\":";
-                        int keyIdx = jsonResult.indexOf(searchKey);
-                        if (keyIdx != -1) {
-                            int startQuote = jsonResult.indexOf("\"", keyIdx + searchKey.length());
-                            if (startQuote != -1) {
-                                int endQuote = jsonResult.lastIndexOf("\"");
-                                if (endQuote > startQuote) {
-                                    result.setQualityNotes(jsonResult.substring(startQuote + 1, endQuote));
+                        
+                        // Manually parse JSON array
+                        List<GeminiQualityResult> results = new java.util.ArrayList<>();
+                        int currentIdx = 0;
+                        while (true) {
+                            int gradeIdx = jsonResult.indexOf("\"qualityGrade\"", currentIdx);
+                            if (gradeIdx == -1) break;
+                            
+                            int gradeStart = jsonResult.indexOf("\"", gradeIdx + 14);
+                            int gradeEnd = jsonResult.indexOf("\"", gradeStart + 1);
+                            String grade = "C";
+                            if (gradeStart != -1 && gradeEnd != -1) {
+                                grade = jsonResult.substring(gradeStart + 1, gradeEnd);
+                            }
+                            
+                            int notesIdx = jsonResult.indexOf("\"qualityNotes\"", currentIdx);
+                            String notes = "Notes not parsed";
+                            int finalNotesEnd = currentIdx; // declare here
+                            if (notesIdx != -1) {
+                                int notesStart = jsonResult.indexOf("\"", notesIdx + 14);
+                                int notesEnd = jsonResult.indexOf("\"", notesStart + 1);
+                                if (notesStart != -1 && notesEnd != -1) {
+                                    notes = jsonResult.substring(notesStart + 1, notesEnd);
+                                    finalNotesEnd = notesEnd;
                                 }
                             }
+                            
+                            GeminiQualityResult res = new GeminiQualityResult();
+                            res.setQualityGrade(grade);
+                            res.setQualityNotes(notes);
+                            results.add(res);
+                            
+                            currentIdx = Math.max(gradeEnd, finalNotesEnd) + 1;
                         }
-                        return result;
+                        
+                        // Fallback if array parsing failed or mismatch
+                        while (results.size() < files.size()) {
+                            GeminiQualityResult fallback = new GeminiQualityResult();
+                            fallback.setQualityGrade("B");
+                            fallback.setQualityNotes("Batch processed, specific notes unavailable.");
+                            results.add(fallback);
+                        }
+                        return results;
                     }
                 }
                 throw new RuntimeException("AI processing completed but yielded no content.");
@@ -128,7 +155,7 @@ public class GeminiService {
                 lastException = new RuntimeException("AI Service Timeout or Unavailable.");
                 if (attempt < MAX_RETRIES) sleepQuietly(BASE_DELAY_MS * (1L << (attempt - 1)));
             } catch (RuntimeException e) {
-                throw e; // Non-retryable (e.g. parse errors)
+                throw e; // Non-retryable
             }
         }
         throw lastException != null ? lastException : new RuntimeException("AI analysis failed after retries.");

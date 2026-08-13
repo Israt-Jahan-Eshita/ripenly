@@ -68,13 +68,12 @@ public class DispatchService {
         List<String> individualGrades = new ArrayList<>();
         StringBuilder combinedNotes = new StringBuilder();
         java.util.Set<String> imageHashes = new java.util.HashSet<>();
+        List<MultipartFile> distinctFiles = new ArrayList<>();
         
         try {
             java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
-            for (int i = 0; i < files.size(); i++) {
-                MultipartFile file = files.get(i);
+            for (MultipartFile file : files) {
                 if (file.isEmpty()) continue;
-                
                 byte[] bytes = getBytesSafely(file);
                 
                 // Duplicate detection
@@ -84,20 +83,24 @@ public class DispatchService {
                     throw new IllegalArgumentException("Duplicate image detected in sample batch. Please upload distinct photos.");
                 }
                 imageHashes.add(hashStr);
-
-                // Analyze
-                GeminiQualityResult qualityResult = geminiService.analyzeProduce(
-                    bytes, 
-                    file.getContentType(), 
-                    produceType
-                );
-                
-                individualGrades.add(qualityResult.getQualityGrade());
-                combinedNotes.append("Sample ").append(i + 1).append(" (").append(qualityResult.getQualityGrade()).append("): ")
-                             .append(qualityResult.getQualityNotes()).append("\n");
+                distinctFiles.add(file);
             }
         } catch (java.security.NoSuchAlgorithmException e) {
             throw new RuntimeException("Hash algorithm not found", e);
+        }
+
+        if (distinctFiles.isEmpty()) {
+            throw new IllegalArgumentException("No valid images found in batch.");
+        }
+
+        // Send ONE batch request to Gemini for all distinct files
+        List<GeminiQualityResult> batchResults = geminiService.analyzeProduceBatch(distinctFiles, produceType);
+        
+        for (int i = 0; i < batchResults.size(); i++) {
+            GeminiQualityResult res = batchResults.get(i);
+            individualGrades.add(res.getQualityGrade());
+            combinedNotes.append("Sample ").append(i + 1).append(" (").append(res.getQualityGrade()).append("): ")
+                         .append(res.getQualityNotes()).append("\n");
         }
 
         if (individualGrades.isEmpty()) {
