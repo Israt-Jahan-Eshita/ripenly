@@ -1,38 +1,34 @@
 import type { Metadata } from "next";
-import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
+import { Inter, Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { DispatchProvider } from "./dispatch/DispatchContext";
+import { AuthProvider } from "./AuthContext";
+import { AppShell } from "@/components/AppShell";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-display" });
+const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   title: "Ripenly",
-  description: "AI Multimodal Decision Engine for Perishable Produce Routing",
+  description: "AI-powered agricultural dispatch decision engine.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body
-        className={`${inter.variable} ${fraunces.variable} ${jetbrainsMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="en" className={`${inter.variable} ${outfit.variable} ${jetbrains.variable}`}>
+      <body className="font-sans antialiased bg-background text-text-primary">
+        <AuthProvider>
+          <DispatchProvider>
+            <AppShell>
+              {children}
+            </AppShell>
+          </DispatchProvider>
+        </AuthProvider>
       </body>
     </html>
   );
