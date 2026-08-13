@@ -44,9 +44,10 @@ public class GeminiService {
         
         String promptText = String.format(
             "Act as an expert agricultural inspector. Analyze these %d images of a %s. " +
-            "Grade only visible physical quality. Do not infer internal quality, pesticide residue, nutritional value, or food safety from an image. " +
-            "Restrict grade to exactly 'A', 'B', or 'C'. Return a JSON array where each element corresponds to an image in order.", 
-            files.size(), produceType
+            "First, determine if the image actually contains the requested produce type (%s). If it does not, set 'isRequestedProduce' to false. " +
+            "If it is the requested produce, grade only visible physical quality (A, B, or C). " +
+            "Return a JSON array where each element corresponds to an image in order.", 
+            files.size(), produceType, produceType
         );
         partsList.add(Map.of("text", promptText));
 
@@ -71,15 +72,17 @@ public class GeminiService {
                 "items", Map.of(
                     "type", "OBJECT",
                     "properties", Map.of(
+                        "isRequestedProduce", Map.of("type", "BOOLEAN"),
                         "qualityGrade", Map.of("type", "STRING", "enum", List.of("A", "B", "C")),
                         "qualityNotes", Map.of("type", "STRING")
                     ),
-                    "required", List.of("qualityGrade", "qualityNotes")
+                    "required", List.of("isRequestedProduce", "qualityGrade", "qualityNotes")
                 )
             )
         ));
 
         RuntimeException lastException = null;
+        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
         
         for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
             try {
@@ -98,48 +101,37 @@ public class GeminiService {
                     if (parts != null && !parts.isEmpty()) {
                         String jsonResult = (String) parts.get(0).get("text");
                         
-                        // Manually parse JSON array
-                        List<GeminiQualityResult> results = new java.util.ArrayList<>();
-                        int currentIdx = 0;
-                        while (true) {
-                            int gradeIdx = jsonResult.indexOf("\"qualityGrade\"", currentIdx);
-                            if (gradeIdx == -1) break;
+                        try {
+                            List<Map<String, Object>> parsedArray = mapper.readValue(
+                                jsonResult, 
+                                new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>(){}
+                            );
                             
-                            int gradeStart = jsonResult.indexOf("\"", gradeIdx + 14);
-                            int gradeEnd = jsonResult.indexOf("\"", gradeStart + 1);
-                            String grade = "C";
-                            if (gradeStart != -1 && gradeEnd != -1) {
-                                grade = jsonResult.substring(gradeStart + 1, gradeEnd);
-                            }
-                            
-                            int notesIdx = jsonResult.indexOf("\"qualityNotes\"", currentIdx);
-                            String notes = "Notes not parsed";
-                            int finalNotesEnd = currentIdx; // declare here
-                            if (notesIdx != -1) {
-                                int notesStart = jsonResult.indexOf("\"", notesIdx + 14);
-                                int notesEnd = jsonResult.indexOf("\"", notesStart + 1);
-                                if (notesStart != -1 && notesEnd != -1) {
-                                    notes = jsonResult.substring(notesStart + 1, notesEnd);
-                                    finalNotesEnd = notesEnd;
+                            List<GeminiQualityResult> results = new java.util.ArrayList<>();
+                            for (Map<String, Object> item : parsedArray) {
+                                Boolean isProduce = (Boolean) item.get("isRequestedProduce");
+                                if (isProduce != null && !isProduce) {
+                                    throw new IllegalArgumentException("Image rejected: One or more uploaded photos do not appear to be a " + produceType + ". Please upload valid produce photos.");
                                 }
+                                
+                                GeminiQualityResult res = new GeminiQualityResult();
+                                res.setQualityGrade((String) item.getOrDefault("qualityGrade", "C"));
+                                res.setQualityNotes((String) item.getOrDefault("qualityNotes", "Could not analyze notes."));
+                                results.add(res);
                             }
                             
-                            GeminiQualityResult res = new GeminiQualityResult();
-                            res.setQualityGrade(grade);
-                            res.setQualityNotes(notes);
-                            results.add(res);
+                            // Fallback if missing elements
+                            while (results.size() < files.size()) {
+                                GeminiQualityResult fallback = new GeminiQualityResult();
+                                fallback.setQualityGrade("B");
+                                fallback.setQualityNotes("Batch processed, specific notes unavailable.");
+                                results.add(fallback);
+                            }
                             
-                            currentIdx = Math.max(gradeEnd, finalNotesEnd) + 1;
+                            return results;
+                        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                            throw new RuntimeException("Failed to parse AI response JSON.", e);
                         }
-                        
-                        // Fallback if array parsing failed or mismatch
-                        while (results.size() < files.size()) {
-                            GeminiQualityResult fallback = new GeminiQualityResult();
-                            fallback.setQualityGrade("B");
-                            fallback.setQualityNotes("Batch processed, specific notes unavailable.");
-                            results.add(fallback);
-                        }
-                        return results;
                     }
                 }
                 throw new RuntimeException("AI processing completed but yielded no content.");
@@ -149,7 +141,7 @@ public class GeminiService {
                 if (attempt < MAX_RETRIES) sleepQuietly(BASE_DELAY_MS * (1L << (attempt - 1)));
             } catch (HttpClientErrorException | HttpServerErrorException e) {
                 System.err.println("Gemini API Error (attempt " + attempt + "): " + e.getResponseBodyAsString());
-                lastException = new RuntimeException("AI Service Error: " + e.getStatusCode());
+                lastException = new RuntimeException("AI Service Error: " + e.getResponseBodyAsString());
                 if (attempt < MAX_RETRIES) sleepQuietly(BASE_DELAY_MS * (1L << (attempt - 1)));
             } catch (ResourceAccessException e) {
                 lastException = new RuntimeException("AI Service Timeout or Unavailable.");
