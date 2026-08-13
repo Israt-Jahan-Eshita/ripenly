@@ -85,7 +85,7 @@ public class GeminiService {
             try {
                 String currentKey = getKeyForAttempt(attempt);
                 Map response = restClient.post()
-                        .uri("/v1beta/models/gemini-1.5-flash:generateContent?key={key}", currentKey)
+                        .uri("/v1beta/models/gemini-3.5-flash:generateContent?key={key}", currentKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(requestBody)
                         .retrieve()
