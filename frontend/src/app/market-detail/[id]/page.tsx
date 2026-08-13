@@ -26,7 +26,8 @@ export default function MarketDetailPage() {
   useEffect(() => {
     const fetchMarket = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/markets/${id}`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+        const res = await fetch(`${apiUrl}/api/markets/${id}`);
         if (!res.ok) throw new Error("Market not found");
         const data = await res.json();
         setMarket(data);

@@ -71,7 +71,8 @@ export default function VoiceInputPage() {
     setCallState("processing");
 
     try {
-      const res = await fetch("http://localhost:8080/api/dispatch/nlp", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+      const res = await fetch(`${apiUrl}/api/dispatch/nlp`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({ transcript })
