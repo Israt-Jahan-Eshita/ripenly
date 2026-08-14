@@ -262,6 +262,58 @@ public class GeminiService {
         return null;
     }
 
+    public String explainDecision(String context, String userMessage) {
+        String promptText = "You are the AI Assistant for Ripenly, a smart B2B supply chain platform for farmers. " +
+                            "Context of the specific dispatch the user is asking about: " + context + "\n" +
+                            "User message: " + userMessage + "\n" +
+                            "Instructions:\n" +
+                            "1. Briefly explain the AI routing decision in plain language based on the context above.\n" +
+                            "2. Do NOT answer any questions outside the scope of agriculture, Ripenly, or this specific dispatch.\n" +
+                            "3. Keep your response helpful, professional, and concise (under 4 sentences if possible).";
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("contents", List.of(
+            Map.of("parts", List.of(
+                Map.of("text", promptText)
+            ))
+        ));
+
+        RuntimeException lastException = null;
+
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                String currentKey = getKeyForAttempt(attempt);
+                Map response = restClient.post()
+                        .uri("/v1beta/models/gemini-3.5-flash:generateContent?key={key}", currentKey)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(requestBody)
+                        .retrieve()
+                        .body(Map.class);
+
+                List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
+                if (candidates != null && !candidates.isEmpty()) {
+                    Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
+                    List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
+                    if (parts != null && !parts.isEmpty()) {
+                        return (String) parts.get(0).get("text");
+                    }
+                }
+                throw new RuntimeException("AI yielded no content");
+            } catch (HttpClientErrorException.TooManyRequests e) {
+                System.err.println("Gemini Chat 429 (attempt " + attempt + "/" + MAX_RETRIES + "). Retrying...");
+                lastException = new RuntimeException("AI Quota Exceeded. Please try again later.");
+                if (attempt < MAX_RETRIES) sleepQuietly(BASE_DELAY_MS * (1L << (attempt - 1)));
+            } catch (HttpClientErrorException | HttpServerErrorException e) {
+                System.err.println("Gemini Chat Error (attempt " + attempt + "): " + e.getResponseBodyAsString());
+                lastException = new RuntimeException("AI Service Error: " + e.getStatusCode());
+                if (attempt < MAX_RETRIES) sleepQuietly(BASE_DELAY_MS * (1L << (attempt - 1)));
+            } catch (RuntimeException e) {
+                throw e;
+            }
+        }
+        throw lastException != null ? lastException : new RuntimeException("Chat explanation failed after retries.");
+    }
+
     private void sleepQuietly(long millis) {
         try {
             Thread.sleep(millis);
