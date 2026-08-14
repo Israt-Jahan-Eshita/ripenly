@@ -71,7 +71,7 @@ export default function VoiceInputPage() {
     setCallState("processing");
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+      const apiUrl = "https://ripenly-backend.onrender.com";
       const res = await fetch(`${apiUrl}/api/dispatch/nlp`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },

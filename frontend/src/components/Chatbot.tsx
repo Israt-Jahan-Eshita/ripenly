@@ -55,11 +55,11 @@ export default function Chatbot() {
         body: JSON.stringify({ context, message: userMsg })
       });
       
-      if (res.ok) {
+      if (res.ok || res.status === 503) {
         const data = await res.json();
-        setMessages(prev => [...prev, { id: Date.now().toString(), sender: "bot", text: data.reply }]);
+        setMessages(prev => [...prev, { id: Date.now().toString(), sender: "bot", text: data.reply || "I couldn't process that. Please try again." }]);
       } else {
-        setMessages(prev => [...prev, { id: Date.now().toString(), sender: "bot", text: "Sorry, I couldn't process that. Please try again." }]);
+        setMessages(prev => [...prev, { id: Date.now().toString(), sender: "bot", text: "I'm temporarily busy. Please try again in a moment." }]);
       }
     } catch (e) {
       setMessages(prev => [...prev, { id: Date.now().toString(), sender: "bot", text: "Connection error." }]);

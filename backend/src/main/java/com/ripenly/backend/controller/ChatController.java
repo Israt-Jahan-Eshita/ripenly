@@ -29,7 +29,11 @@ public class ChatController {
             String response = geminiService.explainDecision(context, message);
             return ResponseEntity.ok(Map.of("reply", response));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            String msg = e.getMessage();
+            if (msg != null && (msg.contains("Quota") || msg.contains("503") || msg.contains("Unavailable"))) {
+                return ResponseEntity.status(503).body(Map.of("reply", "I'm currently experiencing high demand. Please try again in a moment."));
+            }
+            return ResponseEntity.ok(Map.of("reply", "I can only help with questions about Ripenly dispatches and produce routing. Could you rephrase your question?"));
         }
     }
 }
