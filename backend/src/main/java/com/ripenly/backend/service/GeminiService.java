@@ -54,8 +54,12 @@ public class GeminiService {
         for (org.springframework.web.multipart.MultipartFile file : files) {
             try {
                 String base64Image = Base64.getEncoder().encodeToString(file.getBytes());
+                String mimeType = file.getContentType();
+                if (mimeType == null || !mimeType.startsWith("image/")) {
+                    mimeType = "image/jpeg"; // Fallback for Gemini
+                }
                 partsList.add(Map.of("inline_data", Map.of(
-                    "mime_type", file.getContentType(),
+                    "mime_type", mimeType,
                     "data", base64Image
                 )));
             } catch (Exception e) {
