@@ -1,4 +1,4 @@
-# Ripenly 🍅
+# Ripenly
 
 > **AI-Powered Perishable Supply Chain Routing**
 
@@ -6,10 +6,10 @@ Ripenly is an intelligent B2B aggregation platform designed to tackle post-harve
 
 ---
 
-## 🛑 The Problem
+## The Problem
 In fragmented supply chains, over 22% of perishable produce spoils in transit due to inefficient routing, blind dispatching, and lack of real-time quality tracking. Aggregators often send goods to saturated markets, resulting in crashing prices and massive post-harvest food waste.
 
-## 💡 Our Solution
+## Our Solution
 Ripenly transforms blind dispatch into data-driven routing:
 1. **Multimodal Quality Grading:** Agents upload field photos which are instantly graded (A/B/C) using Gemini's vision AI.
 2. **Dynamic ERV Engine:** We calculate the Expected Realized Value (ERV) by factoring in spoilage windows, transport distance, and real-time market demand.
@@ -17,7 +17,7 @@ Ripenly transforms blind dispatch into data-driven routing:
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 *(Note to judges: Check out these live views of our platform in action)*
 
 ![Ripenly Dashboard](/docs/screenshots/home.png)
@@ -33,7 +33,7 @@ Ripenly transforms blind dispatch into data-driven routing:
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 We built Ripenly using a modern, scalable, and fully type-safe architecture:
 
 - **Frontend:** Next.js (v16.3.0), React (v19.2.8), TailwindCSS (v4)
@@ -44,7 +44,7 @@ We built Ripenly using a modern, scalable, and fully type-safe architecture:
 
 ---
 
-## 🏗 Architecture Flow
+## Architecture Flow
 
 ```mermaid
 graph LR
@@ -57,7 +57,7 @@ graph LR
 
 ---
 
-## 🚀 Setup Instructions (Local Development)
+## Setup Instructions (Local Development)
 
 ### 1. Prerequisites
 - Node.js (v20+)
@@ -100,13 +100,13 @@ npm run dev
 
 ---
 
-## 🌐 Live Demo
+## Live Demo
 The application is fully deployed and live!
 
-👉 **[View Ripenly Live (Render)](#)** *(Replace this with the actual Render frontend URL once confirmed)*
+**[View Ripenly Live (Render)](#)** *(Replace this with the actual Render frontend URL once confirmed)*
 
 ---
 
-## 📜 License & Team
+## License & Team
 **Team:** Ripenly  
 *Built for the AI Ideathon 2026*
