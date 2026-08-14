@@ -16,7 +16,7 @@ const slides = [
           AI Multimodal Decision Engine for Perishable Produce Routing
         </p>
         <div className="flex justify-center gap-2 mt-6">
-          {["Gemini 2.5 Flash", "Computer Vision", "ERV Scoring"].map(t => (
+          {["Gemini 3.5 Flash", "Computer Vision", "ERV Scoring"].map(t => (
             <span key={t} className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-glass-strong border border-border text-text-muted">{t}</span>
           ))}
         </div>
@@ -59,7 +59,7 @@ const slides = [
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[
-            { icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", title: "AI Vision Grading", desc: "Gemini 2.5 Flash evaluates photographic evidence to assign real-time quality grades and spoilage windows." },
+            { icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", title: "AI Vision Grading", desc: "Gemini 3.5 Flash evaluates photographic evidence to assign real-time quality grades and spoilage windows." },
             { icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z", title: "ERV Scoring", desc: "Expected Realized Value engine cross-references shelf life, market demand, and transit times." },
             { icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6", title: "Smart Routing", desc: "Ranks all destination markets and recommends the highest-value one with explainable reasoning." },
             { icon: "M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z", title: "Voice + Photo Input", desc: "Field agents use voice dictation and camera — no typing, no literacy requirement." },
@@ -151,7 +151,7 @@ const slides = [
         <div className="glass p-6">
           <h3 className="text-sm font-medium text-text-primary mb-3">Tech Stack</h3>
           <div className="flex flex-wrap gap-2">
-            {["Gemini 2.5 Flash", "Spring Boot", "Next.js 15", "H2 Database", "Tailwind CSS v4", "Web Speech API"].map(t => (
+            {["Gemini 3.5 Flash", "Spring Boot 4.1", "Next.js 16.3", "PostgreSQL / Neon", "Tailwind CSS v4", "Web Speech API"].map(t => (
               <span key={t} className="text-xs font-mono px-3 py-1.5 rounded-lg bg-glass-strong border border-border text-text-secondary">{t}</span>
             ))}
           </div>

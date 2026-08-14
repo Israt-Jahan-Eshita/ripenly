@@ -49,7 +49,7 @@ export default function Home() {
         <div className="mt-10 pt-6 border-t border-border flex items-center justify-center gap-6 text-xs font-mono text-text-muted">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-action animate-pulse"></span>
-            Gemini 2.5 Flash
+            Gemini 3.5 Flash
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-fresh"></span>
