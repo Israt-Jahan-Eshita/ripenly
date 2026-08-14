@@ -48,7 +48,34 @@ export default function NewDispatchPage() {
     }
   };
 
-  const processFiles = (selectedFiles: File[]) => {
+  const compressImage = (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+          const MAX = 1024;
+          if (width > height && width > MAX) { height *= MAX / width; width = MAX; }
+          else if (height > MAX) { width *= MAX / height; height = MAX; }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0, width, height);
+          canvas.toBlob((blob) => {
+            if (blob) resolve(new File([blob], file.name, { type: "image/jpeg" }));
+            else resolve(file);
+          }, "image/jpeg", 0.7);
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const processFiles = async (selectedFiles: File[]) => {
     setError("");
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     let validFiles = selectedFiles.filter(f => allowedTypes.includes(f.type) && f.size <= 5 * 1024 * 1024);
@@ -63,8 +90,9 @@ export default function NewDispatchPage() {
     }
 
     if (validFiles.length > 0) {
-      setFiles([...files, ...validFiles]);
-      validFiles.forEach(f => {
+      const compressedFiles = await Promise.all(validFiles.map(compressImage));
+      setFiles([...files, ...compressedFiles]);
+      compressedFiles.forEach(f => {
         const reader = new FileReader();
         reader.onload = (e) => {
           if (e.target?.result) {

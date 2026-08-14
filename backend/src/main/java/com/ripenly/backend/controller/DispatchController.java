@@ -50,10 +50,10 @@ public class DispatchController {
                 }
             }
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(Map.of("error", "AI analysis is temporarily unavailable. Please try again."));
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.internalServerError().body(Map.of("error", "AI analysis is temporarily unavailable. Please try again."));
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
         }
     }
 
