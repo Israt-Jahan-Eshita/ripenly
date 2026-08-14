@@ -23,7 +23,7 @@ export default function HistoryPage() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+        const apiUrl = "https://ripenly-backend.onrender.com";
         const response = await fetch(`${apiUrl}/api/dispatch`);
         if (!response.ok) throw new Error("Failed to fetch history");
         const data = await response.json();

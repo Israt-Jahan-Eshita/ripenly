@@ -32,7 +32,7 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+  const apiUrl = "https://ripenly-backend.onrender.com";
 
   const fetchMarkets = useCallback(async () => {
     try {

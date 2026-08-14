@@ -40,7 +40,7 @@ export default function ProcessingPage() {
         formData.append("produceType", produceType);
         formData.append("quantity", quantity);
         formData.append("sourceLocation", sourceLocation);
-        const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
+        const apiUrl = "https://ripenly-backend.onrender.com";
         const response = await fetch(`${apiUrl}/api/dispatch/analyze`, { method: "POST", body: formData });
         if (!response.ok) {
           let errMsg = "Analysis failed. Please try again.";
