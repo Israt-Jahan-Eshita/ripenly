@@ -58,8 +58,8 @@ public class GeminiService {
                 if (mimeType == null || !mimeType.startsWith("image/")) {
                     mimeType = "image/jpeg"; // Fallback for Gemini
                 }
-                partsList.add(Map.of("inline_data", Map.of(
-                    "mime_type", mimeType,
+                partsList.add(Map.of("inlineData", Map.of(
+                    "mimeType", mimeType,
                     "data", base64Image
                 )));
             } catch (Exception e) {
