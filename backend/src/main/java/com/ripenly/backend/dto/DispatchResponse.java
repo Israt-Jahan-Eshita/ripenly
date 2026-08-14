@@ -26,6 +26,9 @@ public class DispatchResponse {
     private String status;
     private Integer sampleCount;
     private String sampleGrades;
+    private boolean duplicateSuspected;
+    private Long duplicateOfDispatchId;
+    private int agentFlaggedCount;
 
     public DispatchResponse() {}
 
@@ -88,4 +91,13 @@ public class DispatchResponse {
 
     public String getSampleGrades() { return sampleGrades; }
     public void setSampleGrades(String sampleGrades) { this.sampleGrades = sampleGrades; }
+
+    public boolean isDuplicateSuspected() { return duplicateSuspected; }
+    public void setDuplicateSuspected(boolean duplicateSuspected) { this.duplicateSuspected = duplicateSuspected; }
+
+    public Long getDuplicateOfDispatchId() { return duplicateOfDispatchId; }
+    public void setDuplicateOfDispatchId(Long duplicateOfDispatchId) { this.duplicateOfDispatchId = duplicateOfDispatchId; }
+
+    public int getAgentFlaggedCount() { return agentFlaggedCount; }
+    public void setAgentFlaggedCount(int agentFlaggedCount) { this.agentFlaggedCount = agentFlaggedCount; }
 }

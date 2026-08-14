@@ -13,6 +13,12 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.math.BigInteger;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import dev.brachtendorf.jimagehash.hashAlgorithms.PerceptiveHash;
+import dev.brachtendorf.jimagehash.hash.Hash;
 
 @Service
 public class DispatchService {
@@ -21,6 +27,7 @@ public class DispatchService {
     private final DispatchRepository dispatchRepository;
     private final AgentRepository agentRepository;
     private final DecisionEngineService decisionEngineService;
+    private final PerceptiveHash pHasher = new PerceptiveHash(32);
 
     public DispatchService(GeminiService geminiService, DispatchRepository dispatchRepository, AgentRepository agentRepository, DecisionEngineService decisionEngineService) {
         this.geminiService = geminiService;
@@ -38,6 +45,7 @@ public class DispatchService {
             response.setSourceLocation(dispatch.getSourceLocation());
             response.setQualityGrade(dispatch.getQualityGrade());
             response.setDecision(dispatch.getFinalDecision());
+            response.setDuplicateSuspected(dispatch.isDuplicateSuspected());
             if (dispatch.getExpectedPriceMin() != null && dispatch.getExpectedPriceMax() != null) {
                 response.setExpectedPriceRange(String.format("Tk %.2f - %.2f", dispatch.getExpectedPriceMin(), dispatch.getExpectedPriceMax()));
             }
@@ -68,15 +76,19 @@ public class DispatchService {
         List<String> individualGrades = new ArrayList<>();
         StringBuilder combinedNotes = new StringBuilder();
         java.util.Set<String> imageHashes = new java.util.HashSet<>();
+        List<String> computedPHashes = new ArrayList<>();
         List<MultipartFile> distinctFiles = new ArrayList<>();
         
+        boolean duplicateSuspected = false;
+        Long duplicateOfDispatchId = null;
+
         try {
             java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
             for (MultipartFile file : files) {
                 if (file.isEmpty()) continue;
                 byte[] bytes = getBytesSafely(file);
                 
-                // Duplicate detection
+                // Exact Duplicate detection (in-batch)
                 byte[] hashBytes = digest.digest(bytes);
                 String hashStr = java.util.Base64.getEncoder().encodeToString(hashBytes);
                 if (imageHashes.contains(hashStr)) {
@@ -84,6 +96,17 @@ public class DispatchService {
                 }
                 imageHashes.add(hashStr);
                 distinctFiles.add(file);
+
+                // Perceptual Hashing for cross-session detection
+                try {
+                    BufferedImage img = ImageIO.read(new ByteArrayInputStream(bytes));
+                    if (img != null) {
+                        Hash pHash = pHasher.hash(img);
+                        computedPHashes.add(pHash.getHashValue().toString(16));
+                    }
+                } catch (Exception e) {
+                    System.err.println("Failed to compute pHash: " + e.getMessage());
+                }
             }
         } catch (java.security.NoSuchAlgorithmException e) {
             throw new RuntimeException("Hash algorithm not found", e);
@@ -91,6 +114,27 @@ public class DispatchService {
 
         if (distinctFiles.isEmpty()) {
             throw new IllegalArgumentException("No valid images found in batch.");
+        }
+
+        // Cross-Session Similarity Check (Soft Flag)
+        List<Dispatch> recentDispatches = dispatchRepository.findTop500ByOrderByIdDesc();
+        outerLoop:
+        for (Dispatch recent : recentDispatches) {
+            if (recent.getPerceptualHashes() != null && !recent.getPerceptualHashes().isEmpty()) {
+                String[] storedHexes = recent.getPerceptualHashes().split(",");
+                for (String incomingHex : computedPHashes) {
+                    BigInteger incomingInt = new BigInteger(incomingHex, 16);
+                    for (String storedHex : storedHexes) {
+                        BigInteger storedInt = new BigInteger(storedHex, 16);
+                        int distance = incomingInt.xor(storedInt).bitCount();
+                        if (distance <= 5) { // Hamming distance <= 5
+                            duplicateSuspected = true;
+                            duplicateOfDispatchId = recent.getId().longValue();
+                            break outerLoop;
+                        }
+                    }
+                }
+            }
         }
 
         // Send ONE batch request to Gemini for all distinct files
@@ -125,6 +169,13 @@ public class DispatchService {
             return agentRepository.save(newAgent);
         });
 
+        // Soft flag logic: this is intentionally a soft flag+review mechanism,
+        // not a hard block. We don't want false-positive lockouts on similar tomatoes.
+        if (duplicateSuspected) {
+            agent.setFlaggedSubmissionCount(agent.getFlaggedSubmissionCount() + 1);
+            agentRepository.save(agent);
+        }
+
         // 4. Create and Save Dispatch (QUALITY_ASSESSED)
         Dispatch dispatch = new Dispatch();
         dispatch.setAgent(agent);
@@ -135,6 +186,9 @@ public class DispatchService {
         dispatch.setQualityNotes(combinedNotes.toString().trim());
         dispatch.setSampleCount(individualGrades.size());
         dispatch.setSampleGrades(String.join(",", individualGrades));
+        dispatch.setPerceptualHashes(String.join(",", computedPHashes));
+        dispatch.setDuplicateSuspected(duplicateSuspected);
+        dispatch.setDuplicateOfDispatchId(duplicateOfDispatchId);
         dispatch.setStatus("QUALITY_ASSESSED");
 
         dispatch = dispatchRepository.save(dispatch);
@@ -164,6 +218,9 @@ public class DispatchService {
         response.setQualityNotes(dispatch.getQualityNotes());
         response.setSampleCount(dispatch.getSampleCount());
         response.setSampleGrades(dispatch.getSampleGrades());
+        response.setDuplicateSuspected(dispatch.isDuplicateSuspected());
+        response.setDuplicateOfDispatchId(dispatch.getDuplicateOfDispatchId());
+        response.setAgentFlaggedCount(agent.getFlaggedSubmissionCount());
         response.setRecommendedMarkets((List<Object>) (Object) decisionResult.get("topMarkets"));
         
         if (dispatch.getExpectedPriceMin() != null && dispatch.getExpectedPriceMax() != null) {

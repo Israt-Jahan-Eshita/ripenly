@@ -28,6 +28,18 @@ public class Dispatch {
     @Column(name = "quality_grade", length = 10)
     private String qualityGrade;
 
+    @Column(name = "reasoning", columnDefinition = "TEXT")
+    private String reasoning;
+
+    @Column(name = "perceptual_hashes", columnDefinition = "TEXT")
+    private String perceptualHashes;
+
+    @Column(name = "duplicate_suspected")
+    private boolean duplicateSuspected = false;
+
+    @Column(name = "duplicate_of_dispatch_id")
+    private Long duplicateOfDispatchId;
+
     // Maps to new "quality_notes" column (text)
     @Column(name = "quality_notes", columnDefinition = "TEXT")
     private String qualityNotes;
@@ -142,4 +154,16 @@ public class Dispatch {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getReasoning() { return reasoning; }
+    public void setReasoning(String reasoning) { this.reasoning = reasoning; }
+
+    public String getPerceptualHashes() { return perceptualHashes; }
+    public void setPerceptualHashes(String perceptualHashes) { this.perceptualHashes = perceptualHashes; }
+
+    public boolean isDuplicateSuspected() { return duplicateSuspected; }
+    public void setDuplicateSuspected(boolean duplicateSuspected) { this.duplicateSuspected = duplicateSuspected; }
+
+    public Long getDuplicateOfDispatchId() { return duplicateOfDispatchId; }
+    public void setDuplicateOfDispatchId(Long duplicateOfDispatchId) { this.duplicateOfDispatchId = duplicateOfDispatchId; }
 }

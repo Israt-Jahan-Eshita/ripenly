@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface DispatchRepository extends JpaRepository<Dispatch, Integer> {
     List<Dispatch> findAllByOrderByIdDesc();
+    List<Dispatch> findTop500ByOrderByIdDesc();
 }

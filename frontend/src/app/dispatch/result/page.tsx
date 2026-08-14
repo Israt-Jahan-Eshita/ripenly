@@ -60,6 +60,14 @@ export default function ResultPage() {
           </div>
         </div>
 
+        {/* Soft Flag for Duplicates */}
+        {result.duplicateSuspected && (
+          <div className="mb-6 mx-auto max-w-sm px-4 py-2 rounded-lg bg-caution/10 border border-caution/20 flex items-center justify-center gap-2 animate-fade-in-up" style={{ animationDelay: '0.05s' }}>
+            <svg className="w-4 h-4 text-caution" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            <span className="text-xs font-medium text-caution">Similar image detected — flagged for review</span>
+          </div>
+        )}
+
         {/* TOP DECISION */}
         {bestMarket && (
           <div className="mb-6 animate-fade-in-up" style={{ opacity: 0, animationDelay: '0.1s' }}>

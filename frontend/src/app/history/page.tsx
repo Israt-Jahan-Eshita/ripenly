@@ -12,6 +12,7 @@ interface DispatchRecord {
   decision: string;
   expectedPriceRange: string;
   status: string;
+  duplicateSuspected?: boolean;
 }
 
 export default function HistoryPage() {
@@ -88,6 +89,12 @@ export default function HistoryPage() {
                         <span className="w-1.5 h-1.5 rounded-full bg-action animate-pulse"></span>{record.status}
                       </span>
                     </div>
+                    {record.duplicateSuspected && (
+                      <div className="mb-3 px-3 py-1.5 rounded bg-caution/10 border border-caution/20 flex items-center gap-2">
+                        <svg className="w-3.5 h-3.5 text-caution" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        <span className="text-[10px] font-medium text-caution">Similar image detected — flagged for review</span>
+                      </div>
+                    )}
                     <div className="grid grid-cols-2 gap-2 text-xs mt-3">
                       <div className="neu-inset p-2 text-center">
                         <p className="text-text-muted text-[10px] mb-0.5">Decision</p>
@@ -129,7 +136,14 @@ export default function HistoryPage() {
                             <span className={`w-10 h-10 rounded-xl ${gradeBg} ${gradeColor} flex items-center justify-center font-mono font-bold text-sm shrink-0`}>
                               {record.qualityGrade}
                             </span>
-                            <span className="text-xs font-mono text-text-muted">DSP-{record.dispatchId}</span>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-mono text-text-muted">DSP-{record.dispatchId}</span>
+                              {record.duplicateSuspected && (
+                                <span className="inline-flex mt-1 items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium bg-caution/10 text-caution border border-caution/20">
+                                  Flagged
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td className="p-4">
                             <p className="font-medium text-text-primary text-sm">{record.produceType}</p>

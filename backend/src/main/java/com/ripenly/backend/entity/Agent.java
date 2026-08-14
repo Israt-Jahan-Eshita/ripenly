@@ -19,6 +19,12 @@ public class Agent {
     @Column(name = "base_location", nullable = false, length = 100)
     private String baseLocation;
 
+    @Column(name = "assigned_region")
+    private String assignedRegion;
+
+    @Column(name = "flagged_submission_count")
+    private int flaggedSubmissionCount = 0;
+
     // Constructors
     public Agent() {}
 
@@ -39,4 +45,10 @@ public class Agent {
 
     public String getBaseLocation() { return baseLocation; }
     public void setBaseLocation(String baseLocation) { this.baseLocation = baseLocation; }
+
+    public String getAssignedRegion() { return assignedRegion; }
+    public void setAssignedRegion(String assignedRegion) { this.assignedRegion = assignedRegion; }
+
+    public int getFlaggedSubmissionCount() { return flaggedSubmissionCount; }
+    public void setFlaggedSubmissionCount(int flaggedSubmissionCount) { this.flaggedSubmissionCount = flaggedSubmissionCount; }
 }
