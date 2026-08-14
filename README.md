@@ -34,13 +34,13 @@ Ripenly transforms blind dispatch into data-driven routing:
 ---
 
 ## Tech Stack
-We built Ripenly using a modern, scalable, and fully type-safe architecture:
+We built Ripenly using a modern, scalable, and fully containerized architecture:
 
-- **Frontend:** Next.js (v16.3.0), React (v19.2.8), TailwindCSS (v4)
-- **Backend:** Spring Boot (v4.1.0), Java 21, JImageHash (v1.0.0)
-- **Database:** PostgreSQL (Hosted on Neon)
-- **AI / LLM:** Google Gemini Multimodal API
-- **Deployment:** Render (Frontend & Backend)
+- **Frontend:** Next.js (v14/15), React, TailwindCSS (v4)
+- **Backend:** Spring Boot (v3.x), Java 21
+- **Database:** PostgreSQL (Hosted on Neon Serverless)
+- **AI / LLM:** Google Gemini 3.5-Flash (Vision) & Groq Llama-3.1-8b (NLP & Chat)
+- **Deployment & DevOps:** Docker, Render (Frontend & Backend)
 
 ---
 
