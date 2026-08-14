@@ -131,7 +131,18 @@ export default function HistoryPage() {
                       if (record.qualityGrade === 'C') { gradeColor = 'text-urgent'; gradeBg = 'bg-urgent/15'; }
 
                       return (
-                        <tr key={record.dispatchId} className="hover:bg-glass-strong/50 transition-colors">
+                        <tr 
+                          key={record.dispatchId} 
+                          className="hover:bg-glass-strong/50 transition-colors cursor-pointer"
+                          onClick={() => {
+                            window.dispatchEvent(new CustomEvent("open-chatbot", { 
+                              detail: { 
+                                context: `Dispatch ID: DSP-${record.dispatchId}, Produce: ${record.produceType} (${record.quantity}kg), Source: ${record.sourceLocation}, Grade: ${record.qualityGrade}, Decision: ${record.decision}, Expected Price: ${record.expectedPriceRange}`,
+                                produceInfo: `DSP-${record.dispatchId} (${record.produceType}, Grade ${record.qualityGrade})`
+                              }
+                            }));
+                          }}
+                        >
                           <td className="p-4 flex items-center gap-3">
                             <span className={`w-10 h-10 rounded-xl ${gradeBg} ${gradeColor} flex items-center justify-center font-mono font-bold text-sm shrink-0`}>
                               {record.qualityGrade}

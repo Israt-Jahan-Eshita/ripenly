@@ -4,6 +4,7 @@ import "./globals.css";
 import { DispatchProvider } from "./dispatch/DispatchContext";
 import { AuthProvider } from "./AuthContext";
 import { AppShell } from "@/components/AppShell";
+import Chatbot from "@/components/Chatbot";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-display" });
@@ -27,6 +28,7 @@ export default function RootLayout({
             <AppShell>
               {children}
             </AppShell>
+            <Chatbot />
           </DispatchProvider>
         </AuthProvider>
       </body>
