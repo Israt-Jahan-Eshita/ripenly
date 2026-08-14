@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 export default function BusinessPage() {
-  const [activeTab, setActiveTab] = useState<"model" | "market">("model");
+  const [activeTab, setActiveTab] = useState<"model" | "market" | "roadmap">("model");
 
   return (
     <div className="min-h-screen p-6 sm:p-10 mesh-bg">
@@ -28,6 +28,12 @@ export default function BusinessPage() {
             className={`flex-1 sm:px-8 py-2.5 text-sm font-medium rounded-lg transition-all ${activeTab === "market" ? 'bg-action text-canvas shadow-lg' : 'text-text-secondary hover:text-text-primary'}`}
           >
             Market Size (TAM)
+          </button>
+          <button 
+            onClick={() => setActiveTab("roadmap")}
+            className={`flex-1 sm:px-8 py-2.5 text-sm font-medium rounded-lg transition-all ${activeTab === "roadmap" ? 'bg-action text-canvas shadow-lg' : 'text-text-secondary hover:text-text-primary'}`}
+          >
+            Roadmap
           </button>
         </div>
 
@@ -169,6 +175,102 @@ export default function BusinessPage() {
               ))}
             </div>
 
+          </div>
+        )}
+
+        {activeTab === "roadmap" && (
+          <div className="space-y-6 animate-fade-in-up" style={{ opacity: 0, animationDelay: '0.15s' }}>
+            <div className="glass p-8 sm:p-12 rounded-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-96 h-96 bg-action/5 blur-3xl rounded-full pointer-events-none"></div>
+              
+              <div className="text-center max-w-2xl mx-auto mb-16 relative z-10">
+                <h2 className="text-3xl font-display text-text-primary mb-4 tracking-tight">Product Evolution</h2>
+                <p className="text-sm text-text-secondary leading-relaxed">
+                  Strategic roadmap balancing immediate routing impact with long-term ecosystem lock-in and market expansion.
+                </p>
+              </div>
+
+              {/* Timeline Container */}
+              <div className="relative border-l-2 border-action/20 ml-4 sm:ml-8 space-y-12 pb-8">
+                
+                {/* Phase 1 */}
+                <div className="relative pl-8 sm:pl-12">
+                  <div className="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-action border-4 border-[#121c1a] shadow-[0_0_15px_rgba(40,167,69,0.5)]"></div>
+                  <div className="mb-2 flex items-center gap-3">
+                    <span className="px-2.5 py-1 rounded bg-action/10 text-action text-[10px] font-mono uppercase tracking-wider font-bold">Phase 1</span>
+                    <span className="text-sm font-medium text-text-muted uppercase tracking-wider">MVP (Current)</span>
+                  </div>
+                  <h3 className="text-xl font-display text-text-primary mb-3">Core Routing & Fraud Defense</h3>
+                  <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                    <div className="glass p-4 rounded-xl border border-action/10 hover:border-action/30 transition-colors">
+                      <p className="font-medium text-text-primary mb-1">Gemini Multimodal Grading</p>
+                      <p className="text-text-secondary text-xs">AI-driven quality assessment from unstructured field photos.</p>
+                    </div>
+                    <div className="glass p-4 rounded-xl border border-action/10 hover:border-action/30 transition-colors">
+                      <p className="font-medium text-text-primary mb-1">ERV Decision Engine</p>
+                      <p className="text-text-secondary text-xs">Dynamic routing based on spoilage vs. transit alpha.</p>
+                    </div>
+                    <div className="glass p-4 rounded-xl border border-action/10 hover:border-action/30 transition-colors">
+                      <p className="font-medium text-text-primary mb-1">Perceptual Hashing (pHash)</p>
+                      <p className="text-text-secondary text-xs">Cross-session duplicate detection preventing submission fraud.</p>
+                    </div>
+                    <div className="glass p-4 rounded-xl border border-action/10 hover:border-action/30 transition-colors">
+                      <p className="font-medium text-text-primary mb-1">Agent Dispatch Flow</p>
+                      <p className="text-text-secondary text-xs">End-to-end B2B aggregation logging & assignments.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Phase 2 */}
+                <div className="relative pl-8 sm:pl-12">
+                  <div className="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-border border-4 border-[#121c1a]"></div>
+                  <div className="mb-2 flex items-center gap-3">
+                    <span className="px-2.5 py-1 rounded bg-glass-strong text-text-primary text-[10px] font-mono uppercase tracking-wider font-bold border border-border">Phase 2</span>
+                    <span className="text-sm font-medium text-text-muted uppercase tracking-wider">Next 6 Months</span>
+                  </div>
+                  <h3 className="text-xl font-display text-text-primary mb-3">Data Loop & Hardening</h3>
+                  <div className="grid sm:grid-cols-2 gap-3 text-sm opacity-90 hover:opacity-100 transition-opacity">
+                    <div className="neu-inset p-4 rounded-xl">
+                      <p className="font-medium text-text-primary mb-1">DAM Integration</p>
+                      <p className="text-text-secondary text-xs">Real-time sync with Dept of Agricultural Marketing price bulletins.</p>
+                    </div>
+                    <div className="neu-inset p-4 rounded-xl">
+                      <p className="font-medium text-text-primary mb-1">Closed-Loop Learning</p>
+                      <p className="text-text-secondary text-xs">Actual sale prices feed back to auto-tune the predictive ERV model.</p>
+                    </div>
+                    <div className="neu-inset p-4 rounded-xl">
+                      <p className="font-medium text-text-primary mb-1">Fraud Hardening</p>
+                      <p className="text-text-secondary text-xs">Advanced heuristics for multi-agent coordinated fraud rings.</p>
+                    </div>
+                    <div className="neu-inset p-4 rounded-xl">
+                      <p className="font-medium text-text-primary mb-1">Agent Reputation System</p>
+                      <p className="text-text-secondary text-xs">Automated performance tiers based on quality accuracy.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Phase 3 */}
+                <div className="relative pl-8 sm:pl-12">
+                  <div className="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-border border-4 border-[#121c1a]"></div>
+                  <div className="mb-2 flex items-center gap-3">
+                    <span className="px-2.5 py-1 rounded bg-glass-strong text-text-primary text-[10px] font-mono uppercase tracking-wider font-bold border border-border">Phase 3</span>
+                    <span className="text-sm font-medium text-text-muted uppercase tracking-wider">1 Year Horizon</span>
+                  </div>
+                  <h3 className="text-xl font-display text-text-primary mb-3">Scale & Inclusion</h3>
+                  <div className="grid sm:grid-cols-2 gap-3 text-sm opacity-70 hover:opacity-100 transition-opacity">
+                    <div className="glass p-4 rounded-xl border border-border border-dashed">
+                      <p className="font-medium text-text-primary mb-1">IVR Support (Voice AI)</p>
+                      <p className="text-text-secondary text-xs">Accessibility for feature-phones and illiterate farming populations.</p>
+                    </div>
+                    <div className="glass p-4 rounded-xl border border-border border-dashed">
+                      <p className="font-medium text-text-primary mb-1">Multi-Region Expansion</p>
+                      <p className="text-text-secondary text-xs">Launch in India, Indonesia, Vietnam, Nigeria, Kenya, Egypt.</p>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
           </div>
         )}
 
