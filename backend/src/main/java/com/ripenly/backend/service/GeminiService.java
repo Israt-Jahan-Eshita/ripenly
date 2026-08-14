@@ -33,10 +33,16 @@ public class GeminiService {
     public List<GeminiQualityResult> analyzeProduceBatch(List<org.springframework.web.multipart.MultipartFile> files, String produceType) {
         // MOCK VISION API FOR DEMO VIDEO DUE TO GOOGLE CLOUD OUTAGE / QUOTA LIMITS
         List<GeminiQualityResult> results = new java.util.ArrayList<>();
+        
+        // Ensure produceType is capitalized nicely
+        String displayProduce = produceType != null && !produceType.trim().isEmpty() 
+            ? produceType.substring(0, 1).toUpperCase() + produceType.substring(1).toLowerCase()
+            : "produce";
+
         for (org.springframework.web.multipart.MultipartFile file : files) {
             GeminiQualityResult res = new GeminiQualityResult();
             res.setQualityGrade("A");
-            res.setQualityNotes("Excellent condition. Vibrant color and firm texture detected. No visible blemishes.");
+            res.setQualityNotes("Excellent condition. The " + displayProduce + " shows vibrant coloring and firm texture appropriate for its variety. No visible blemishes or signs of decay detected.");
             results.add(res);
         }
         
