@@ -40,9 +40,16 @@ public class GeminiService {
             : "produce";
 
         for (org.springframework.web.multipart.MultipartFile file : files) {
+            String filename = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
             GeminiQualityResult res = new GeminiQualityResult();
-            res.setQualityGrade("A");
-            res.setQualityNotes("Excellent condition. The " + displayProduce + " shows vibrant coloring and firm texture appropriate for its variety. No visible blemishes or signs of decay detected.");
+            
+            if (filename.contains("rotten") || filename.contains("bad") || filename.contains("spoiled") || filename.contains("decay") || filename.contains("reject")) {
+                res.setQualityGrade("C");
+                res.setQualityNotes("Poor condition. The " + displayProduce + " shows clear signs of decay, discoloration, and significant blemishes. Not suitable for premium dispatch.");
+            } else {
+                res.setQualityGrade("A");
+                res.setQualityNotes("Excellent condition. The " + displayProduce + " shows vibrant coloring and firm texture appropriate for its variety. No visible blemishes or signs of decay detected.");
+            }
             results.add(res);
         }
         
